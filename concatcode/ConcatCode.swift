@@ -1,11 +1,3 @@
-//
-//  ConcatCode.swift
-//  concatcode
-//
-//  Created by Pierre van Aswegen on 2025-07-10.
-//
-
-
 import Foundation
 import ArgumentParser
 
@@ -13,7 +5,7 @@ import ArgumentParser
 struct ConcatCode: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A Swift CLT to concatenate Swift source files from multiple modules into a single file.",
-        version: "1.0.0"
+        version: "1.1.0" // Updated version
     )
 
     @Argument(help: "One or more directory paths to scan for source files.")
@@ -46,7 +38,7 @@ struct ConcatCode: ParsableCommand {
         }
 
         for path in directoryPaths {
-            let directoryURL = URL(fileURLWithPath: path)
+            let directoryURL = URL(fileURLWithPath: path).standardized
             try processDirectory(url: directoryURL, outputHandle: outputHandle)
         }
         
@@ -61,8 +53,7 @@ struct ConcatCode: ParsableCommand {
             return
         }
 
-        let moduleName = findModuleName(in: url)
-        print("Processing module '\(moduleName)' from path \(url.path)...")
+        print("Processing directory tree at \(url.path)...")
 
         for case let fileURL as URL in enumerator {
             guard try fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true else { continue }
@@ -71,19 +62,39 @@ struct ConcatCode: ParsableCommand {
             
             // Criteria check
             if fileName != "Package.swift" && (fileName.hasSuffix(".swift") || fileName == "Info.plist") {
+                // For each file, find its specific module name by searching upwards for Package.swift
+                let moduleName = findModuleName(for: fileURL, relativeTo: url)
                 try appendFileContents(from: fileURL, moduleName: moduleName, to: outputHandle)
             }
         }
     }
 
-    /// Determines the module name for a given directory.
-    /// It prioritizes the name from `Package.swift` if found, otherwise uses the directory name.
-    private func findModuleName(in directoryURL: URL) -> String {
-        let packageFileURL = directoryURL.appendingPathComponent("Package.swift")
-        if let packageName = parsePackageName(from: packageFileURL) {
-            return packageName
+    /// Determines the module name for a given file by searching up the directory tree for `Package.swift`.
+    /// - Parameters:
+    ///   - fileURL: The URL of the source file being processed.
+    ///   - topLevelURL: The top-level directory of the scan, used as a boundary.
+    /// - Returns: The name of the module the file belongs to.
+    private func findModuleName(for fileURL: URL, relativeTo topLevelURL: URL) -> String {
+        var currentURL = fileURL.deletingLastPathComponent()
+
+        // Walk up the directory tree from the file's location
+        while currentURL.path.count >= topLevelURL.path.count && currentURL.path.hasPrefix(topLevelURL.path) {
+            let packageFileURL = currentURL.appendingPathComponent("Package.swift")
+            
+            if let packageName = parsePackageName(from: packageFileURL) {
+                return packageName
+            }
+            
+            // Stop if we are at the top-level directory itself and have checked it
+            if currentURL.path == topLevelURL.path {
+                break
+            }
+            
+            currentURL.deleteLastPathComponent()
         }
-        return directoryURL.lastPathComponent
+        
+        // If no Package.swift was found in the ancestry, default to the top-level directory's name.
+        return topLevelURL.lastPathComponent
     }
 
     /// Parses a `Package.swift` file to find the package name.
@@ -92,12 +103,10 @@ struct ConcatCode: ParsableCommand {
             return nil
         }
         
-        // A simple but effective line-by-line search for the name parameter.
-        // This is more resilient than a complex regex for this specific case.
+        // A simple line-by-line search for the name parameter.
         for line in content.components(separatedBy: .newlines) {
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
             if trimmedLine.hasPrefix("name:") {
-                // Extracts the value from 'name: "MyPackage"'
                 let components = trimmedLine.split(separator: ":", maxSplits: 1)
                 if components.count == 2 {
                     return components[1]
