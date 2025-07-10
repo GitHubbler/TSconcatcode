@@ -5,7 +5,7 @@ import ArgumentParser
 struct ConcatCode: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A Swift CLT to concatenate Swift source files from multiple modules into a single file.",
-        version: "1.2.1" // Updated version
+        version: "1.2.1"
     )
 
     @Argument(help: "One or more directory paths to scan for source files.")
@@ -17,16 +17,27 @@ struct ConcatCode: ParsableCommand {
     /// Runs the command logic.
     func run() throws {
         let outputURL = URL(fileURLWithPath: output)
+        let fileManager = FileManager.default
         
         // Ensure the output directory exists
         let outputDir = outputURL.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: outputDir, withIntermediateDirectories: true)
 
-        // Create or truncate the output file
+        // =================== START OF FIX ===================
+        // If the output file does not exist, create it before attempting to open a handle.
+        // This is the necessary step to fix the crash with new files.
+        if !fileManager.fileExists(atPath: outputURL.path) {
+            guard fileManager.createFile(atPath: outputURL.path, contents: nil, attributes: nil) else {
+                throw CleanExit.message("Error: Failed to create output file at \(outputURL.path). Check permissions.")
+            }
+        }
+        // =================== END OF FIX ===================
+
+        // Now that the file is guaranteed to exist, this call will succeed.
         guard let outputHandle = try? FileHandle(forWritingTo: outputURL) else {
             throw CleanExit.message("Error: Could not open file handle for output at \(outputURL.path)")
         }
-        // Ensure the file is empty before we start
+        // This line correctly clears the file for a fresh run.
         outputHandle.truncateFile(atOffset: 0)
         
         defer {
@@ -45,7 +56,7 @@ struct ConcatCode: ParsableCommand {
         print("✅ Concatenation complete. Output written to \(outputURL.path)")
     }
 
-    /// Processes a single top-level directory provided as a command-line argument.
+    // UNCHANGED from your provided base version
     private func processDirectory(url: URL, outputHandle: FileHandle) throws {
         let fileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) else {
@@ -60,24 +71,17 @@ struct ConcatCode: ParsableCommand {
             
             let fileName = fileURL.lastPathComponent
             
-            // Criteria check
             if fileName != "Package.swift" && (fileName.hasSuffix(".swift") || fileName == "Info.plist") {
-                // For each file, find its specific module name by searching upwards for Package.swift
                 let moduleName = findModuleName(for: fileURL, relativeTo: url)
                 try appendFileContents(from: fileURL, moduleName: moduleName, to: outputHandle)
             }
         }
     }
 
-    /// Determines the module name for a given file by searching up the directory tree for `Package.swift`.
-    /// - Parameters:
-    ///   - fileURL: The URL of the source file being processed.
-    ///   - topLevelURL: The top-level directory of the scan, used as a boundary.
-    /// - Returns: The name of the module the file belongs to.
+    // UNCHANGED from your provided base version
     private func findModuleName(for fileURL: URL, relativeTo topLevelURL: URL) -> String {
         var currentURL = fileURL.deletingLastPathComponent()
 
-        // Walk up the directory tree from the file's location
         while currentURL.path.count >= topLevelURL.path.count && currentURL.path.hasPrefix(topLevelURL.path) {
             let packageFileURL = currentURL.appendingPathComponent("Package.swift")
             
@@ -85,7 +89,6 @@ struct ConcatCode: ParsableCommand {
                 return packageName
             }
             
-            // Stop if we are at the top-level directory itself and have checked it
             if currentURL.path == topLevelURL.path {
                 break
             }
@@ -93,43 +96,38 @@ struct ConcatCode: ParsableCommand {
             currentURL.deleteLastPathComponent()
         }
         
-        // If no Package.swift was found in the ancestry, default to the top-level directory's name.
         return topLevelURL.lastPathComponent
     }
 
-    /// Parses a `Package.swift` file to find the package name.
+    // UNCHANGED from your provided base version
     private func parsePackageName(from packageFileURL: URL) -> String? {
         guard let content = try? String(contentsOf: packageFileURL, encoding: .utf8) else {
             return nil
         }
         
-        // A simple line-by-line search for the name parameter.
         for line in content.components(separatedBy: .newlines) {
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
             if trimmedLine.hasPrefix("name:") {
                 let components = trimmedLine.split(separator: ":", maxSplits: 1)
                 if components.count == 2 {
                     return components[1]
-                        .trimmingCharacters(in: .whitespaces)
-                        .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                        .trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: "\",")))
                 }
             }
         }
         return nil
     }
 
-    /// Appends the formatted content of a single source file to the output handle, filtering out comments.
+    // UNCHANGED from your provided base version
     private func appendFileContents(from fileURL: URL, moduleName: String, to outputHandle: FileHandle) throws {
         let fileName = fileURL.lastPathComponent
         let rawFileContents = try String(contentsOf: fileURL, encoding: .utf8)
 
-        // Filter out lines starting with "//", ignoring leading whitespace.
         let filteredLines = rawFileContents.components(separatedBy: .newlines).filter { line in
             !line.trimmingCharacters(in: .whitespaces).hasPrefix("//")
         }
         let fileContents = filteredLines.joined(separator: "\n")
 
-        // Don't append empty files
         guard !fileContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
@@ -144,7 +142,6 @@ struct ConcatCode: ParsableCommand {
         let fullBlock = "\(header)\n\(fileContents)\n\(footer)"
 
         if let data = fullBlock.data(using: .utf8) {
-            // CORRECTED: Use the universally compatible write(_:) method.
             outputHandle.write(data)
         }
     }

@@ -54,14 +54,26 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/AluminiumApp"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&apos;/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Aluminium WFO Data Wrangler&apos;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Packages/Data/AluminiumGeobotany"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Packages"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--output /Users/pierre/Downloads/combinedAluminium.txt"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--output /Users/pierre/Downloads/combinedWFOWrangler.txt"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
