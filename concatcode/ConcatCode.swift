@@ -5,7 +5,7 @@ import ArgumentParser
 struct ConcatCode: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A Swift CLT to concatenate Swift source files from multiple modules into a single file.",
-        version: "1.1.0" // Updated version
+        version: "1.2.1" // Updated version
     )
 
     @Argument(help: "One or more directory paths to scan for source files.")
@@ -118,10 +118,21 @@ struct ConcatCode: ParsableCommand {
         return nil
     }
 
-    /// Appends the formatted content of a single source file to the output handle.
+    /// Appends the formatted content of a single source file to the output handle, filtering out comments.
     private func appendFileContents(from fileURL: URL, moduleName: String, to outputHandle: FileHandle) throws {
         let fileName = fileURL.lastPathComponent
-        let fileContents = try String(contentsOf: fileURL, encoding: .utf8)
+        let rawFileContents = try String(contentsOf: fileURL, encoding: .utf8)
+
+        // Filter out lines starting with "//", ignoring leading whitespace.
+        let filteredLines = rawFileContents.components(separatedBy: .newlines).filter { line in
+            !line.trimmingCharacters(in: .whitespaces).hasPrefix("//")
+        }
+        let fileContents = filteredLines.joined(separator: "\n")
+
+        // Don't append empty files
+        guard !fileContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
 
         let header = """
         // module: \(moduleName)
@@ -133,7 +144,8 @@ struct ConcatCode: ParsableCommand {
         let fullBlock = "\(header)\n\(fileContents)\n\(footer)"
 
         if let data = fullBlock.data(using: .utf8) {
-            try outputHandle.write(contentsOf: data)
+            // CORRECTED: Use the universally compatible write(_:) method.
+            outputHandle.write(data)
         }
     }
 }
