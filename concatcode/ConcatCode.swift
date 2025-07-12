@@ -23,7 +23,6 @@ struct ConcatCode: ParsableCommand {
         let outputDir = outputURL.deletingLastPathComponent()
         try fileManager.createDirectory(at: outputDir, withIntermediateDirectories: true)
 
-        // =================== START OF FIX ===================
         // If the output file does not exist, create it before attempting to open a handle.
         // This is the necessary step to fix the crash with new files.
         if !fileManager.fileExists(atPath: outputURL.path) {
@@ -31,7 +30,6 @@ struct ConcatCode: ParsableCommand {
                 throw CleanExit.message("Error: Failed to create output file at \(outputURL.path). Check permissions.")
             }
         }
-        // =================== END OF FIX ===================
 
         // Now that the file is guaranteed to exist, this call will succeed.
         guard let outputHandle = try? FileHandle(forWritingTo: outputURL) else {
@@ -56,7 +54,6 @@ struct ConcatCode: ParsableCommand {
         print("✅ Concatenation complete. Output written to \(outputURL.path)")
     }
 
-    // UNCHANGED from your provided base version
     private func processDirectory(url: URL, outputHandle: FileHandle) throws {
         let fileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) else {
@@ -71,14 +68,17 @@ struct ConcatCode: ParsableCommand {
             
             let fileName = fileURL.lastPathComponent
             
-            if fileName != "Package.swift" && (fileName.hasSuffix(".swift") || fileName == "Info.plist") {
+            if fileName != "Package.swift" && (
+                fileName.hasSuffix(".swift")
+                || fileName == "Info.plist"
+                || fileName == "README.md"
+            ) {
                 let moduleName = findModuleName(for: fileURL, relativeTo: url)
                 try appendFileContents(from: fileURL, moduleName: moduleName, to: outputHandle)
             }
         }
     }
 
-    // UNCHANGED from your provided base version
     private func findModuleName(for fileURL: URL, relativeTo topLevelURL: URL) -> String {
         var currentURL = fileURL.deletingLastPathComponent()
 
@@ -99,7 +99,6 @@ struct ConcatCode: ParsableCommand {
         return topLevelURL.lastPathComponent
     }
 
-    // UNCHANGED from your provided base version
     private func parsePackageName(from packageFileURL: URL) -> String? {
         guard let content = try? String(contentsOf: packageFileURL, encoding: .utf8) else {
             return nil
@@ -118,7 +117,6 @@ struct ConcatCode: ParsableCommand {
         return nil
     }
 
-    // UNCHANGED from your provided base version
     private func appendFileContents(from fileURL: URL, moduleName: String, to outputHandle: FileHandle) throws {
         let fileName = fileURL.lastPathComponent
         let rawFileContents = try String(contentsOf: fileURL, encoding: .utf8)
