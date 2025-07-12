@@ -57,7 +57,23 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&apos;/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Aluminium WFO Data Wrangler&apos;"
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/NamesDistributionJoiner"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/NamesDistributionEncoder"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/KewWCVPNamesExtractor"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/get-genera-abbr"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/AluminiumDataPrepTool"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
