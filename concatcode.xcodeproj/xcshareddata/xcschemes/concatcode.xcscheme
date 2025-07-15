@@ -81,6 +81,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "/Users/pierre/y/Experiments/DocumentPrototype"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Packages"
             isEnabled = "NO">
          </CommandLineArgument>
@@ -91,6 +95,10 @@
          <CommandLineArgument
             argument = "--output /Users/pierre/Downloads/combinedWFOWrangler.txt"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--output /Users/pierre/Downloads/combinedDocumentPrototype.txt"
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

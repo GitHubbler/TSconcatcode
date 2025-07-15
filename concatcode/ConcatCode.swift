@@ -72,6 +72,7 @@ struct ConcatCode: ParsableCommand {
                 fileName.hasSuffix(".swift")
                 || fileName == "Info.plist"
                 || fileName == "README.md"
+                || fileName == "PLAN.md"
             ) {
                 let moduleName = findModuleName(for: fileURL, relativeTo: url)
                 try appendFileContents(from: fileURL, moduleName: moduleName, to: outputHandle)
