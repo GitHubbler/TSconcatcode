@@ -58,7 +58,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/NamesDistributionJoiner"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/NamesDistributionEncoder"
@@ -66,11 +66,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/KewWCVPNamesExtractor"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/get-genera-abbr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/AluminiumDataPrepTool"
@@ -82,7 +82,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/Experiments/DocumentPrototype"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/pierre/y/MdV_apps_y/13Aluminium/Aluminium/Packages"

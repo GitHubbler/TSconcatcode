@@ -68,7 +68,13 @@ struct ConcatCode: ParsableCommand {
             
             let fileName = fileURL.lastPathComponent
             
-            if fileName != "Package.swift" && (
+            if fileName != "Package.swift"
+                && fileName != "TaxonBrowserView.swift"
+                && fileName != "KewProcessor.swift"
+                && fileName != "WFOProcessor.swift"
+                && fileName != "WFOTaxonDetailsFileDocument.swift"
+                && fileName != "KewProcessor"
+                && (
                 fileName.hasSuffix(".swift")
                 || fileName == "Info.plist"
                 || fileName == "README.md"
